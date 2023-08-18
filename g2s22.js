@@ -1,4 +1,4 @@
-console.log("Content script is running");
+console.log("Script is running");
 
 function convertMaps() {
     let iframes = document.querySelectorAll('iframe');
@@ -41,28 +41,24 @@ function processIframe(iframe, src) {
 }
 
 function replaceMap(lat, lng, address) {
-    // Extract the color of the site header
     let headerElement = document.querySelector('header');
     let headerColor = getComputedStyle(headerElement).backgroundColor;
     let hexColor = rgbToHex(headerColor);
 
-    // Grab the full URL of the favicon on the site
     let faviconLink = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]');
     let faviconURL = faviconLink ? faviconLink.href : '';
 
-    // Build the Stay22 URL
     let stay22URL;
     if (address) {
-        stay22URL = `https://www.stay22.com/embed/gm?aid=arjunsamazingevents&address=${address}`;
+        stay22URL = `https://www.stay22.com/embed/gm?aid=vermontcom&showgmapsicon=trueaddress=${address}`;
     } else {
-        stay22URL = `https://www.stay22.com/embed/gm?aid=arjunsamazingevents&lat=${lat}&lng=${lng}`;
+        stay22URL = `https://www.stay22.com/embed/gm?aid=vermontcom&showgmapsicon=truelat=${lat}&lng=${lng}`;
     }
 
-    // Append additional parameters
     stay22URL += `&maincolor=${hexColor}&markerimage=${faviconURL}`;
 
     console.log('Replacing with Stay22 URL:', stay22URL);
-    
+
     let newIframe = document.createElement('iframe');
     newIframe.src = stay22URL;
     newIframe.width = "100%";
@@ -73,15 +69,12 @@ function replaceMap(lat, lng, address) {
     return newIframe;
 }
 
-// Function to convert RGB to HEX
 function rgbToHex(rgb) {
     let regex = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
     let result = rgb.match(regex);
-    return result ? `${(+result[1]).toString(16).padStart(2, '0')}${(+result[2]).toString(16).padStart(2, '0')}${(+result[3]).toString(16).padStart(2, '0')}` : '';
+    return result ? `#${(+result[1]).toString(16).padStart(2, '0')}${(+result[2]).toString(16).padStart(2, '0')}${(+result[3]).toString(16).padStart(2, '0')}` : '';
 }
 
-
-// Mutation Observer to watch for changes in the DOM
 const observer = new MutationObserver((mutations) => {
     for (let mutation of mutations) {
         if (mutation.type === 'childList') {
@@ -90,7 +83,6 @@ const observer = new MutationObserver((mutations) => {
     }
 });
 
-// Configuration of the observer
 const config = {
     attributes: true,
     childList: true,
@@ -98,12 +90,6 @@ const config = {
     subtree: true
 };
 
-// Pass in the target node (document's body in this case), as well as the observer options
 observer.observe(document.body, config);
 
-// Check the checkbox state when the page loads
-chrome.storage.local.get(['isActive'], function(result) {
-    if (result.isActive) {
-        convertMaps();
-    }
-});
+convertMaps();
